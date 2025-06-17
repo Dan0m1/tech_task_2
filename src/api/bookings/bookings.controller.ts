@@ -23,6 +23,7 @@ import {
   ApiOkResponse,
 } from '@nestjs/swagger';
 import { ResponseBookingDto } from './dto/response-booking.dto';
+import {CreateBookingPipe} from "../../common/pipes/create-booking.pipe";
 
 @Controller('bookings')
 export class BookingsController {
@@ -35,7 +36,7 @@ export class BookingsController {
     type: ResponseBookingDto,
   })
   @Post()
-  async create(@Body() createBookingDto: CreateBookingDto) {
+  async create(@Body(CreateBookingPipe) createBookingDto: CreateBookingDto) {
     return this.bookingsService.create(createBookingDto);
   }
 

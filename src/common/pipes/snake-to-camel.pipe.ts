@@ -1,28 +1,15 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-
-function toCamelCase(obj: unknown): any {
-  if (Array.isArray(obj)) {
-    return obj.map(toCamelCase);
-  } else if (obj !== null && typeof obj === 'object') {
-    return Object.fromEntries(
-      Object.entries(obj).map(([key, value]) => [
-        key.replace(/_([a-z])/g, (_, c) => c.toUpperCase()),
-        toCamelCase(value),
-      ]),
-    );
-  }
-  return obj;
-}
+import camelcaseKeys from 'camelcase-keys';
 
 @Injectable()
 export class SnakeToCamelPipe implements PipeTransform {
-  transform(value: unknown, metadata: ArgumentMetadata): any {
+  transform(value: Record<string, any>, metadata: ArgumentMetadata): any {
     if (!metadata.metatype) {
       return value;
     }
 
-    const cameled = toCamelCase(value);
+    const cameled = camelcaseKeys(value, { deep: true });
     return plainToInstance(metadata.metatype, cameled);
   }
 }

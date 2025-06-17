@@ -13,6 +13,9 @@ export class BookingsRepository {
     return this.prisma.booking.create({
       data: data,
       ...kwargs,
+      omit: {
+        deletedAt: true,
+      },
     });
   }
 
