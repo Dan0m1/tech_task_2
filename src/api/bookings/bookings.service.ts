@@ -13,32 +13,15 @@ export class BookingsService {
   constructor(private readonly bookingsRepository: BookingsRepository) {}
 
   async create(createBookingDto: CreateBookingDto) {
-    const { userId, roomId, ...rest } = createBookingDto;
-
-    const booking: Booking | null = await this.bookingsRepository.findOne({
-      AND: [
-        { startTime: { lt: rest.endTime } },
-        { endTime: { gt: rest.startTime } },
-      ],
-    });
-
-    if (booking) {
-      throw new ConflictException('Booking time overlaps with another booking');
+    try {
+      return await this.bookingsRepository.createWithCheckTransaction(
+        createBookingDto,
+      );
+    } catch (e) {
+      if (e.message === "There's already a booking in this time slot") {
+        throw new ConflictException(e.message);
+      }
     }
-
-    return this.bookingsRepository.create({
-      ...rest,
-      user: {
-        connect: {
-          id: userId,
-        },
-      },
-      room: {
-        connect: {
-          id: roomId,
-        },
-      },
-    });
   }
 
   async getAll(includeDeleted: boolean = false): Promise<Booking[]> {
