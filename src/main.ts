@@ -4,6 +4,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { SnakeToCamelPipe } from './common/pipes/snake-to-camel.pipe';
+import { CamelToSnakeInterceptor } from './common/interceptors/camel-to-snake.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -19,6 +20,7 @@ async function bootstrap() {
       },
     }),
   );
+  app.useGlobalInterceptors(new CamelToSnakeInterceptor());
 
   const documentConfig = new DocumentBuilder()
     .addBearerAuth()
