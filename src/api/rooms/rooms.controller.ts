@@ -5,7 +5,7 @@ import { ApiEndpoint } from '../../common/decorators/api-endpoint.decorator';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { QueryAllAvailableRoomsDto } from './dto/query-all-available-rooms.dto';
-import { ApiOkResponse } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 import { ResponseRoomDto } from './dto/response-room.dto';
 
 @Controller('rooms')
@@ -17,6 +17,9 @@ export class RoomsController {
     description: 'Only for admins',
     guards: [JwtGuard, RolesGuard],
     roles: ['ADMIN'],
+  })
+  @ApiCreatedResponse({
+    type: ResponseRoomDto,
   })
   @Post()
   async create(@Body() createRoomDto: CreateRoomDto) {

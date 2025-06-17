@@ -4,6 +4,8 @@ import { ApiEndpoint } from '../../common/decorators/api-endpoint.decorator';
 import { UserRequestEntity } from '../auth/types/user-request.entity';
 import { User } from '../../common/decorators/get-user.decorator';
 import { JwtGuard } from '../auth/guards/jwt.guard';
+import { ApiOkResponse } from '@nestjs/swagger';
+import { ResponseBookingDto } from '../bookings/dto/response-booking.dto';
 
 @Controller('users')
 export class UsersController {
@@ -14,6 +16,10 @@ export class UsersController {
     description:
       'Admins can get all bookings of a user, user can get only his bookings',
     guards: [JwtGuard],
+  })
+  @ApiOkResponse({
+    type: ResponseBookingDto,
+    isArray: true,
   })
   @Get('/:id/bookings')
   async getUserBookings(

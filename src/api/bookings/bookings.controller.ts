@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { BookingsService } from './bookings.service';
 import { ApiEndpoint } from '../../common/decorators/api-endpoint.decorator';
 import { CreateBookingDto } from './dto/create-booking.dto';
@@ -6,6 +15,12 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { UserRequestEntity } from '../auth/types/user-request.entity';
 import { User } from '../../common/decorators/get-user.decorator';
+import {
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+} from '@nestjs/swagger';
+import { ResponseBookingDto } from './dto/response-booking.dto';
 
 @Controller('bookings')
 export class BookingsController {
@@ -13,6 +28,9 @@ export class BookingsController {
 
   @ApiEndpoint({
     summary: 'Create booking',
+  })
+  @ApiCreatedResponse({
+    type: ResponseBookingDto,
   })
   @Post()
   async create(@Body() createBookingDto: CreateBookingDto) {
@@ -25,6 +43,10 @@ export class BookingsController {
     guards: [JwtGuard, RolesGuard],
     roles: ['ADMIN'],
   })
+  @ApiOkResponse({
+    type: ResponseBookingDto,
+    isArray: true,
+  })
   @Get()
   async getAll() {
     return this.bookingsService.getAll();
@@ -36,8 +58,12 @@ export class BookingsController {
       'Admins can delete any booking, user can delete only his bookings',
     guards: [JwtGuard],
   })
+  @ApiNoContentResponse({
+    description: 'Booking deleted',
+  })
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete('/:id')
   async delete(@User() user: UserRequestEntity, @Param('id') id: string) {
-    return this.bookingsService.delete(id, user);
+    await this.bookingsService.delete(id, user);
   }
 }
