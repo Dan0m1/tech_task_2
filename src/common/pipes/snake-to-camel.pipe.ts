@@ -4,7 +4,7 @@ import camelcaseKeys from 'camelcase-keys';
 
 @Injectable()
 export class SnakeToCamelPipe implements PipeTransform {
-  transform(value: Record<string, any>, metadata: ArgumentMetadata): any {
+  transform(value: any, metadata: ArgumentMetadata): any {
     if (!metadata.metatype) {
       return value;
     }
