@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -7,6 +8,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
 } from '@nestjs/common';
 import { BookingsService } from './bookings.service';
 import { ApiEndpoint } from '../../common/decorators/api-endpoint.decorator';
@@ -48,8 +50,14 @@ export class BookingsController {
     isArray: true,
   })
   @Get()
-  async getAll() {
-    return this.bookingsService.getAll();
+  async getAll(@Query('includeDeleted') includeDeletedParam: string) {
+    let includeDeleted: boolean;
+    if (!includeDeletedParam || includeDeletedParam === 'false')
+      includeDeleted = false;
+    else if (includeDeletedParam === 'true') includeDeleted = true;
+    else throw new BadRequestException('Invalid value for includeDeleted');
+
+    return this.bookingsService.getAll(includeDeleted);
   }
 
   @ApiEndpoint({
@@ -64,6 +72,6 @@ export class BookingsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete('/:id')
   async delete(@User() user: UserRequestEntity, @Param('id') id: string) {
-    await this.bookingsService.delete(id, user);
+    await this.bookingsService.softDelete(id, user);
   }
 }

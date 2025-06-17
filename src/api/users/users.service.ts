@@ -19,7 +19,11 @@ export class UsersService {
           { id },
           {
             select: {
-              bookings: true,
+              bookings: {
+                where: {
+                  deletedAt: null,
+                },
+              },
             },
           },
         )) as unknown as { bookings: Booking[] };

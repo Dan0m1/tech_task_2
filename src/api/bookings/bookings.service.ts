@@ -41,11 +41,46 @@ export class BookingsService {
     });
   }
 
-  async getAll() {
-    return this.bookingsRepository.findMany();
+  async getAll(includeDeleted: boolean = false): Promise<Booking[]> {
+    return this.bookingsRepository.findMany(
+      {
+        deletedAt: includeDeleted ? {} : null,
+      },
+      {
+        omit: {
+          deletedAt: !includeDeleted,
+        },
+      },
+    );
   }
 
-  async delete(id: string, initiator: UserRequestEntity) {
+  async softDelete(id: string, initiator: UserRequestEntity) {
+    if (initiator.roles.includes('ADMIN')) {
+      return this.bookingsRepository.update(
+        { id },
+        {
+          deletedAt: new Date(),
+        },
+      );
+    }
+
+    const booking = await this.bookingsRepository.findOne({ id });
+    if (!booking) {
+      throw new BadRequestException('Booking with this id does not exist');
+    }
+    if (booking.userId !== initiator.id) {
+      throw new BadRequestException('You can only delete your own bookings');
+    }
+
+    return this.bookingsRepository.update(
+      { id },
+      {
+        deletedAt: new Date(),
+      },
+    );
+  }
+
+  async hardDelete(id: string, initiator: UserRequestEntity) {
     if (initiator.roles.includes('ADMIN')) {
       return this.bookingsRepository.delete({ id });
     }

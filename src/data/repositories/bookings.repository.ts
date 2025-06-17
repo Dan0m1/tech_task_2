@@ -36,6 +36,18 @@ export class BookingsRepository {
     });
   }
 
+  async update(
+    where: Prisma.BookingWhereUniqueInput,
+    data: Prisma.BookingUpdateInput,
+    kwargs?: Partial<Prisma.BookingUpdateArgs>,
+  ) {
+    return this.prisma.booking.update({
+      where: where,
+      data: data,
+      ...kwargs,
+    });
+  }
+
   async delete(
     where: Prisma.BookingWhereUniqueInput,
     kwargs?: Partial<Prisma.BookingDeleteArgs>,
