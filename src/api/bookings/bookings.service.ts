@@ -43,7 +43,7 @@ export class BookingsService {
       throw new BadRequestException('Booking with this id does not exist');
     }
 
-    if (initiator.roles.includes('ADMIN')) {
+    if (initiator.roles.includes('ADMIN') || booking.userId === initiator.id) {
       return this.bookingsRepository.update(
         { id },
         {
@@ -52,16 +52,7 @@ export class BookingsService {
       );
     }
 
-    if (booking.userId !== initiator.id) {
-      throw new BadRequestException('You can only delete your own bookings');
-    }
-
-    return this.bookingsRepository.update(
-      { id },
-      {
-        deletedAt: new Date(),
-      },
-    );
+    throw new BadRequestException('You can only delete your own bookings');
   }
 
   async hardDelete(id: string, initiator: UserRequestEntity) {
@@ -70,14 +61,10 @@ export class BookingsService {
       throw new BadRequestException('Booking with this id does not exist');
     }
 
-    if (initiator.roles.includes('ADMIN')) {
+    if (initiator.roles.includes('ADMIN') || booking.userId === initiator.id) {
       return this.bookingsRepository.delete({ id });
     }
 
-    if (booking.userId !== initiator.id) {
-      throw new BadRequestException('You can only delete your own bookings');
-    }
-
-    return this.bookingsRepository.delete({ id });
+    throw new BadRequestException('You can only delete your own bookings');
   }
 }
