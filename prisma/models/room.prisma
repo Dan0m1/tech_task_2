@@ -1,0 +1,10 @@
+model Room {
+  id       String @id @default(uuid())
+  name     String
+  capacity Int
+
+  bookings Booking[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
