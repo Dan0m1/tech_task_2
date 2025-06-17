@@ -4,4 +4,4 @@
 .idea
 dist
 node_modules
-src/data/client
+src/data/generated
