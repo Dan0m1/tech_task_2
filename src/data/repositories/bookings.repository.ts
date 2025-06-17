@@ -1,19 +1,56 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { Prisma } from '../generated/prisma';
+import { Booking, Prisma } from '../generated/prisma';
+import { CreateBookingDto } from '../../api/bookings/dto/create-booking.dto';
 
 @Injectable()
 export class BookingsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(
-    data: Prisma.BookingCreateInput,
-    kwargs?: Partial<Prisma.BookingCreateArgs>,
-  ) {
-    return this.prisma.booking.create({
-      data: data,
-      ...kwargs,
-    });
+  async createWithCheckTransaction(createBookingDto: CreateBookingDto) {
+    const { userId, roomId, ...rest } = createBookingDto;
+
+    return this.prisma.$transaction(
+      async (tx) => {
+        const booking: Booking | null = await tx.booking.findFirst({
+          where: {
+            AND: [
+              { deletedAt: null },
+              { startTime: { lt: rest.endTime } },
+              { endTime: { gt: rest.startTime } },
+            ],
+          },
+        });
+
+        if (booking) {
+          throw new Error("There's already a booking in this time slot");
+        }
+
+        const newBooking = await tx.booking.create({
+          data: {
+            ...rest,
+            user: {
+              connect: {
+                id: userId,
+              },
+            },
+            room: {
+              connect: {
+                id: roomId,
+              },
+            },
+          },
+          omit: {
+            deletedAt: true,
+          },
+        });
+
+        return newBooking;
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead,
+      },
+    );
   }
 
   async findOne(
@@ -32,6 +69,18 @@ export class BookingsRepository {
   ) {
     return this.prisma.booking.findMany({
       where: where,
+      ...kwargs,
+    });
+  }
+
+  async update(
+    where: Prisma.BookingWhereUniqueInput,
+    data: Prisma.BookingUpdateInput,
+    kwargs?: Partial<Prisma.BookingUpdateArgs>,
+  ) {
+    return this.prisma.booking.update({
+      where: where,
+      data: data,
       ...kwargs,
     });
   }

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -7,6 +8,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
 } from '@nestjs/common';
 import { BookingsService } from './bookings.service';
 import { ApiEndpoint } from '../../common/decorators/api-endpoint.decorator';
@@ -21,6 +23,7 @@ import {
   ApiOkResponse,
 } from '@nestjs/swagger';
 import { ResponseBookingDto } from './dto/response-booking.dto';
+import {CreateBookingPipe} from "../../common/pipes/create-booking.pipe";
 
 @Controller('bookings')
 export class BookingsController {
@@ -33,7 +36,7 @@ export class BookingsController {
     type: ResponseBookingDto,
   })
   @Post()
-  async create(@Body() createBookingDto: CreateBookingDto) {
+  async create(@Body(CreateBookingPipe) createBookingDto: CreateBookingDto) {
     return this.bookingsService.create(createBookingDto);
   }
 
@@ -48,8 +51,14 @@ export class BookingsController {
     isArray: true,
   })
   @Get()
-  async getAll() {
-    return this.bookingsService.getAll();
+  async getAll(@Query('includeDeleted') includeDeletedParam: string) {
+    let includeDeleted: boolean;
+    if (!includeDeletedParam || includeDeletedParam === 'false')
+      includeDeleted = false;
+    else if (includeDeletedParam === 'true') includeDeleted = true;
+    else throw new BadRequestException('Invalid value for includeDeleted');
+
+    return this.bookingsService.getAll(includeDeleted);
   }
 
   @ApiEndpoint({
@@ -64,6 +73,6 @@ export class BookingsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete('/:id')
   async delete(@User() user: UserRequestEntity, @Param('id') id: string) {
-    await this.bookingsService.delete(id, user);
+    await this.bookingsService.softDelete(id, user);
   }
 }

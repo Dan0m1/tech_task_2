@@ -1,7 +1,7 @@
 import { Booking } from '../../../data/generated/prisma';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class BookingEntity implements Booking {
+export class BookingEntity implements Omit<Booking, 'deletedAt'> {
   @ApiProperty({
     description: 'Booking id',
   })
