@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { Booking, Prisma } from '../generated/prisma';
 import { CreateBookingDto } from '../../api/bookings/dto/create-booking.dto';
@@ -15,6 +15,7 @@ export class BookingsRepository {
         const booking: Booking | null = await tx.booking.findFirst({
           where: {
             AND: [
+              { deletedAt: null },
               { startTime: { lt: rest.endTime } },
               { endTime: { gt: rest.startTime } },
             ],

@@ -14,5 +14,5 @@ model Booking {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@unique([userId, roomId, startTime, endTime])
+  @@index([userId, roomId, startTime, endTime], map: "unique_booking_active")
 }
